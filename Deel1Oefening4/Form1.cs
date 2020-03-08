@@ -21,10 +21,33 @@ namespace Deel1Oefening4
 
         private void buttonZoek_Click(object sender, EventArgs e)
         {
+            textBoxResultaat.ResetText();
+            // SearchWithInlineQuery();
+            SearchWithStoredProcedure();
+        }
+
+        private void SearchWithStoredProcedure()
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings[0].ConnectionString))
+            using (SqlCommand cmd = new SqlCommand("SelecteerOpBasisVanNaam", conn) { CommandType = CommandType.StoredProcedure })
+            {
+                conn.Open();
+                cmd.Parameters.AddWithValue("@Voornaam", $"%{textBoxVoornaam.Text}%");
+                cmd.Parameters.AddWithValue("@Naam", $"%{textBoxNaam.Text}%");
+                SqlDataReader reader = cmd.ExecuteReader();
+                int nummer = 1;
+                while (reader.Read())
+                {
+                    textBoxResultaat.AppendText(nummer++ + "\t" + reader.GetValue(4) + "\t" + reader.GetValue(6) + Environment.NewLine);
+                }
+            }
+        }
+
+        private void SearchWithInlineQuery()
+        {
             string query = "SELECT * FROM Person.Person WHERE FirstName LIKE @Voornaam AND LastName LIKE @Naam";
             using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings[0].ConnectionString))
             {
-                textBoxResultaat.ResetText();
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
                 cmd.CommandText = query;
