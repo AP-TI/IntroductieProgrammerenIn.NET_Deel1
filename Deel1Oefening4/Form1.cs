@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -19,7 +21,23 @@ namespace Deel1Oefening4
 
         private void buttonZoek_Click(object sender, EventArgs e)
         {
-
+            string query = "SELECT * FROM Person.Person WHERE FirstName LIKE @Voornaam AND LastName LIKE @Naam";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings[0].ConnectionString))
+            {
+                textBoxResultaat.ResetText();
+                conn.Open();
+                SqlCommand cmd = conn.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.Add("@Voornaam", SqlDbType.NVarChar);
+                cmd.Parameters["@Voornaam"].Value = $"%{textBoxVoornaam.Text}%";
+                cmd.Parameters.AddWithValue("@Naam", $"%{textBoxNaam.Text}%");
+                SqlDataReader reader = cmd.ExecuteReader();
+                int nummer = 1;
+                while (reader.Read())
+                {
+                    textBoxResultaat.AppendText(nummer++ + "\t" + reader.GetValue(4) + "\t" + reader.GetValue(6) + Environment.NewLine);
+                }
+            }
         }
     }
 }
